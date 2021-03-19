@@ -4,4 +4,3 @@ all: main.c HP.c HP.h BF.h BF_64.a
 
 clean:
 	rm -o main HP
-	//make && ./main
