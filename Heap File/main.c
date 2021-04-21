@@ -1,9 +1,8 @@
-#include "HT.h"
+#include "HP.h"
 
 int main(int argc, char **argv)
 {
-    //HP_info *info;
-    HT_info *info;
+    HP_info *info;
     char fileName[10];
     strcpy(fileName, "file");
     int blockId, blocks;
@@ -60,20 +59,18 @@ int main(int argc, char **argv)
     fclose(fp);
 
     BF_Init();
-    if (HT_CreateIndex(fileName, 'c', "name", 5, 10) != 0)
+    if (HP_CreateFile(fileName, 'c', "name", 5) != 0)
     {
         printf("Error creating file");
         return -1;
     }
-
-    if ((info = HT_OpenIndex(fileName)) == NULL)
+    if ((info = HP_OpenFile(fileName)) == NULL)
     {
         printf("Error opening file");
         return -1;
     }
-    /*
     //printf("%d\n",info->attrName);
-    for(int i = 0;i < 1000;i++)                                 //insert 1000 entries from 15k
+    for (int i = 0; i < 1000; i++) //insert 1000 entries from 15k
     {
         if ((blockId = HP_InsertEntry(*info, record[i])) == -1)
         {
@@ -82,23 +79,23 @@ int main(int argc, char **argv)
         }
     }
 
-    value = &(record[5].id);                                    //delete entry with id the same as record[5]'s
-    if (HP_DeleteEntry(*info,value) != 0)
+    value = &(record[5].id); //delete entry with id the same as record[5]'s
+    if (HP_DeleteEntry(*info, value) != 0)
     {
         printf("Error deleting entry\n");
         return -1;
     }
 
-    //value = &(record[0].id);                                  //uncomment in order to find entries with id the same as value -->should be only one   
-    if ((blocks = HP_GetAllEntries(*info,NULL)) == -1)          //print all entries
+    //value = &(record[0].id);                                  //uncomment in order to find entries with id the same as value -->should be only one
+    if ((blocks = HP_GetAllEntries(*info, NULL)) == -1) //print all entries
     {
         printf("Error printing entries\n");
         return -1;
     }
-    if (HP_CloseFile(info) != 0)                                //close file
+    if (HP_CloseFile(info) != 0) //close file
     {
         printf("Error closing file\n");
         return -1;
     }
-    return 0;*/
+    return 0;
 }

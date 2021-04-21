@@ -1,6 +1,6 @@
-all: main.c HP.c HP.h BF.h BF_64.a
-	gcc -c HP.c -o HP.o
-	gcc -o main main.c HP.c -no-pie BF_64.a
+all: main.c HT.c HT.h BF.h BF_64.a
+	gcc -c HT.c -o HT.o
+	gcc -o main main.c HT.c -no-pie BF_64.a
 
 clean:
-	rm -o main HP
+	rm -f *.o main HT
