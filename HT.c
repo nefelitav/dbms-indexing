@@ -95,23 +95,41 @@ int HT_CloseIndex(HT_info *header_info)
     header_info = NULL;
     return 0;
 }
-/*
+
 int HT_InsertEntry(HT_info header_info, Record record)
 {
+    int blockNum;
+    void *block;
+
+    int pos = HashFunction(header_info, record.id);
+    int attrPerBlock = BLOCK_SIZE / header_info.attrLength;        //How many block indexes fit in a block
+    int indexBlocks = header_info.numBuckets / (attrPerBlock - 1); //Number of blocks of buckets
+    int blockOfBuckets = pos / (attrPerBlock - 1) + 1;             //In which block of buckets the info is
+    int indexInBlock = pos % (attrPerBlock - 1);                   //Index in the block of buckets
+
+    if ((blockNum = BF_GetBlockCounter(header_info.fileDesc)) < 0) //get count of blocks
+    {
+        BF_PrintError("Unable to get block counter.\n");
+        return -1;
+    }
+    if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, &block) != 0) //find block
+    {
+        BF_PrintError("Unable to read block.\n");
+        return -1;
+    }
 }
 
+/*
 int HT_DeleteEntry(HT_info header_info, void *value)
 {
 }
 
-int HashStatistics(char *filename)
-{
-}
-int hashNum(HT_info header_info, int id)
-{
-    return id % header_info.numBuckets;
-}
 int HT_GetAllEntries(HT_info header_info, void *value)
 {
 }
 */
+
+int HashFunction(HT_info header_info, int id)
+{
+    return id % header_info.numBuckets;
+}

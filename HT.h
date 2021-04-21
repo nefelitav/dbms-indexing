@@ -27,10 +27,7 @@ int HT_CreateIndex(char *fileName, char attrType, char *attrName, int attrLength
 HT_info *HT_OpenIndex(char *fileName);
 int HT_CloseIndex(HT_info *header_info);
 int HT_InsertEntry(HT_info header_info, Record record);
-int HT_InsertEntry2(HT_info header_info, Record record);
 int HT_DeleteEntry(HT_info header_info, void *value);
 int HT_GetAllEntries(HT_info header_info, void *value);
-int HashStatistics(char *filename);
-int hashNum(HT_info header_info, int id);
-int findItem(HT_info *header_info, int id);
+int HashFunction(HT_info header_info, int id);
 #endif
