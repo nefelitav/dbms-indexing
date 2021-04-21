@@ -71,9 +71,8 @@ int main(int argc, char **argv)
         printf("Error opening file");
         return -1;
     }
-    /*
-    //printf("%d\n",info->attrName);
-    for(int i = 0;i < 1000;i++)                                 //insert 1000 entries from 15k
+
+    /*for(int i = 0;i < 1000;i++)                                 //insert 1000 entries from 15k
     {
         if ((blockId = HP_InsertEntry(*info, record[i])) == -1)
         {
@@ -94,11 +93,11 @@ int main(int argc, char **argv)
     {
         printf("Error printing entries\n");
         return -1;
-    }
-    if (HP_CloseFile(info) != 0)                                //close file
+    }*/
+    if (HT_CloseIndex(info) != 0) //close file
     {
         printf("Error closing file\n");
         return -1;
     }
-    return 0;*/
+    return 0;
 }

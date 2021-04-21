@@ -10,7 +10,7 @@ typedef struct
 {
     int fileDesc;
     char attrType;
-    char *attrName;
+    char attrName[LENGTH];
     int attrLength;
     long int numBuckets;
 } HT_info;

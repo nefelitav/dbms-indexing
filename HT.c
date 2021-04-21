@@ -30,12 +30,11 @@ int HT_CreateIndex(char *fileName, char attrType, char *attrName, int attrLength
     }
 
     strncpy(block++, (char *)&attrType, sizeof(char)); //initialize first block
-    memcpy(block, &attrLength, sizeof(int));
-    block += sizeof(int);
-    memcpy(block, &buckets, sizeof(long int));
-    block += sizeof(long int);
     strncpy(block, attrName, sizeof(char) * LENGTH);
-    block += LENGTH;
+    block += LENGTH; //always increment block pointer,to add new info
+    memcpy(block, &attrLength, sizeof(int));
+    block += 4;
+    memcpy(block, &buckets, sizeof(long int));
 
     if (BF_WriteBlock(fd, 0) < 0) //write block
     {
@@ -72,24 +71,21 @@ HT_info *HT_OpenIndex(char *fileName)
         BF_CloseFile(fd);
         return NULL;
     }
-
     file->fileDesc = fd;
-
-    strncpy(&(file->attrType), block++, sizeof(char)); //copy info from
+    strncpy(&(file->attrType), block++, sizeof(char));     //copy info from block
+    strncpy(file->attrName, block, sizeof(char) * LENGTH); //always increment block pointer,to add new info
+    block += LENGTH;
+    file->attrName[LENGTH - 1] = '\0'; //to make sure thats the end of string
     memcpy(&(file->attrLength), block, sizeof(int));
     block += 4;
     memcpy(&(file->numBuckets), block, sizeof(long int));
-    block += sizeof(long int);
-    //memcpy(file->attrName, block, sizeof(char) * LENGTH); //always increment block pointer,to add new info
-
     if (file->numBuckets < 1 || file == NULL) //not a hash table or empty
         return NULL;
     return file;
 }
-/*
+
 int HT_CloseIndex(HT_info *header_info)
 {
-
     if (BF_CloseFile(header_info->fileDesc) != 0)
     {
         BF_PrintError("Unable to close file.\n");
@@ -99,6 +95,7 @@ int HT_CloseIndex(HT_info *header_info)
     header_info = NULL;
     return 0;
 }
+/*
 int HT_InsertEntry(HT_info header_info, Record record)
 {
 }
