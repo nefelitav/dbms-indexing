@@ -130,22 +130,29 @@ int HT_InsertEntry(HT_info header_info, Record record)
             return -1;
         }
         *ptr = blockNum;
+        if (BF_WriteBlock(header_info.fileDesc, blockOfBuckets) != 0) //write block of buckets
+        {
+            BF_PrintError("Unable to write block.\n");
+            return -1;
+        }
+
+        if (BF_ReadBlock(header_info.fileDesc, blockNum, &block) != 0) //find block
+        {
+            BF_PrintError("Unable to read block.\n");
+            return -1;
+        }
     }
-    if (BF_WriteBlock(header_info.fileDesc, blockOfBuckets) != 0) //write block of buckets
+    else
     {
-        BF_PrintError("Unable to write block.\n");
-        return -1;
-    }
-    if (BF_ReadBlock(header_info.fileDesc, blockNum, &block) != 0) //find block
-    {
-        BF_PrintError("Unable to read block.\n");
-        return -1;
+        if (BF_ReadBlock(header_info.fileDesc, *ptr, &block) != 0) //find block
+        {
+            BF_PrintError("Unable to read block.\n");
+            return -1;
+        }
     }
     base = block;
-
-    for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record positions - 5 in total
+    for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
     {
-
         f = 1;                   //check if empty entry
         for (j = 0; j < 96; j++) //for every char in record space
         {
@@ -171,9 +178,12 @@ int HT_InsertEntry(HT_info header_info, Record record)
         }
         block += sizeof(Record); //move in block
     }
-    /*
+
     if (blankrec == -1) //full bucket
     {
+        block = base;
+        block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
+        memcpy(block, &blockNum, sizeof(int));
         if (BF_AllocateBlock(header_info.fileDesc) != 0) //allocate new block
         {
             BF_PrintError("Unable to allocate block.\n");
@@ -191,9 +201,7 @@ int HT_InsertEntry(HT_info header_info, Record record)
             return -1;
         }
         return blockNum;
-    }*/
-
-    //printf("%d\n", *t);
+    }
 }
 
 /*

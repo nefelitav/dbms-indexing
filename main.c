@@ -78,6 +78,33 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    if ((blockId = HT_InsertEntry(*info, record[10])) == -1)
+    {
+        printf("Error inserting entry\n");
+        return -1;
+    }
+    if ((blockId = HT_InsertEntry(*info, record[20])) == -1)
+    {
+        printf("Error inserting entry\n");
+        return -1;
+    }
+    if ((blockId = HT_InsertEntry(*info, record[30])) == -1)
+    {
+        printf("Error inserting entry\n");
+        return -1;
+    }
+    if ((blockId = HT_InsertEntry(*info, record[40])) == -1)
+    {
+        printf("Error inserting entry\n");
+        return -1;
+    }
+    if ((blockId = HT_InsertEntry(*info, record[50])) == -1)
+    {
+        printf("Error inserting entry\n");
+        return -1;
+    }
+    printf("%d\n", blockId);
+
     /*for(int i = 0;i < 1000;i++)                                 //insert 1000 entries from 15k
     {
         if ((blockId = HΤ_InsertEntry(*info, record[i])) == -1)
