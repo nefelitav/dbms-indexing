@@ -99,6 +99,7 @@ int HT_CloseIndex(HT_info *header_info)
 int HT_InsertEntry(HT_info header_info, Record record)
 {
     char filled;
+    int fill;
     int f = 1, i, j;
     int blockNum, blankrec = -1;
     void *block;
@@ -115,13 +116,12 @@ int HT_InsertEntry(HT_info header_info, Record record)
         BF_PrintError("Unable to get block counter.\n");
         return -1;
     }
-    if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, &block) != 0) //find block
+    if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, (void **)&ptr) != 0) //find block
     {
         BF_PrintError("Unable to read block.\n");
         return -1;
     }
-    block = block + indexInBlock;
-    ptr = block;
+    ptr += indexInBlock;
     if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
     {
         if (BF_AllocateBlock(header_info.fileDesc) != 0)
@@ -129,7 +129,7 @@ int HT_InsertEntry(HT_info header_info, Record record)
             BF_PrintError("Unable to allocate block.\n");
             return -1;
         }
-        *ptr = blockNum;
+        *ptr = BF_GetBlockCounter(header_info.fileDesc) - 1;
         if (BF_WriteBlock(header_info.fileDesc, blockOfBuckets) != 0) //write block of buckets
         {
             BF_PrintError("Unable to write block.\n");
@@ -150,65 +150,147 @@ int HT_InsertEntry(HT_info header_info, Record record)
             return -1;
         }
     }
-    base = block;
-    for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
+    while (1)
     {
-        f = 1;                   //check if empty entry
-        for (j = 0; j < 96; j++) //for every char in record space
+        base = block;
+        for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
         {
-            strncpy(&filled, block, sizeof(char));
-            if (filled != 0) //if not empty then go to next record position
+            f = 1;                   //check if empty entry
+            for (j = 0; j < 96; j++) //for every char in record space
             {
-                f = 0;
-                block -= j; //go to base of block
-                break;
+                strncpy(&filled, block, sizeof(char));
+                if (filled != 0) //if not empty then go to next record position
+                {
+                    f = 0;
+                    block -= j; //go to base of block
+                    break;
+                }
+                block++; //keep looking
             }
-            block++; //keep looking
-        }
-        if (f == 1) //no record here
-        {
-            block -= 96;
-            memcpy(block, &record, sizeof(Record));                        //copy info on block
-            if ((blockNum = BF_GetBlockCounter(header_info.fileDesc)) < 2) //get count of blocks
+            if (f == 1) //no record here
             {
-                BF_PrintError("Unable to get block counter.\n");
-                return -1;
-            }
-            return blockNum; //insertion is done
-        }
-        block += sizeof(Record); //move in block
-    }
+                block -= 96;
+                memcpy(block, &record, sizeof(Record)); //copy info on block
 
-    if (blankrec == -1) //full bucket
-    {
-        block = base;
-        block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
-        memcpy(block, &blockNum, sizeof(int));
-        if (BF_AllocateBlock(header_info.fileDesc) != 0) //allocate new block
-        {
-            BF_PrintError("Unable to allocate block.\n");
-            return -1;
+                if ((blockNum = BF_GetBlockCounter(header_info.fileDesc)) < 2) //get count of blocks
+                {
+                    BF_PrintError("Unable to get block counter.\n");
+                    return -1;
+                }
+                if (BF_WriteBlock(header_info.fileDesc, blockNum - 1) != 0) //write block of buckets
+                {
+                    BF_PrintError("Unable to write block.\n");
+                    return -1;
+                }
+                return blockNum; //insertion is done
+            }
+            block += sizeof(Record); //move in block
         }
-        if (BF_ReadBlock(header_info.fileDesc, blockNum, &block) != 0) //read last block
+
+        if (blankrec == -1) //full bucket
         {
-            BF_PrintError("Unable to read block.\n");
-            return -1;
+            block = base;
+            block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
+            strncpy(&filled, block, sizeof(char));
+            if (filled == 0) //no overflow bucket yet
+            {
+                //create overflow bucket
+                memcpy(block, &blockNum, sizeof(int));
+                if (BF_AllocateBlock(header_info.fileDesc) != 0) //allocate new block
+                {
+                    BF_PrintError("Unable to allocate block.\n");
+                    return -1;
+                }
+                if (BF_ReadBlock(header_info.fileDesc, blockNum, &block) != 0)
+                {
+                    BF_PrintError("Unable to read block.\n");
+                    return -1;
+                }
+                memcpy(block, &record, sizeof(Record));                     //copy info on block
+                if (BF_WriteBlock(header_info.fileDesc, blockNum - 1) != 0) //write block
+                {
+                    BF_PrintError("Unable to write block.\n");
+                    return -1;
+                }
+                return blockNum;
+            }
+            else
+            {
+                memcpy(&fill, block, sizeof(int));
+                if (BF_ReadBlock(header_info.fileDesc, filled, &block) != 0)
+                {
+                    BF_PrintError("Unable to read block.\n");
+                    return -1;
+                }
+            }
         }
-        memcpy(block, &record, sizeof(Record));                 //copy info on block
-        if (BF_WriteBlock(header_info.fileDesc, blockNum) != 0) //write block
-        {
-            BF_PrintError("Unable to write block.\n");
-            return -1;
-        }
+
         return blockNum;
     }
 }
 
-/*
 int HT_DeleteEntry(HT_info header_info, void *value)
 {
+    char filled;
+    int *base;
+    void *block;
+    int *ptr;
+    int i;
+    int id;
+    int pos = HashFunction(header_info, *((int *)value));
+    int attrPerBlock = BLOCK_SIZE / header_info.attrLength;                     //How many block indexes fit in a block
+    int indexBlocks = header_info.numBuckets / (attrPerBlock - 1);              //Number of blocks of buckets
+    int blockOfBuckets = pos / (attrPerBlock - 1) + 1;                          //In which block of buckets the info is
+    int indexInBlock = pos % (attrPerBlock - 1);                                //Index in the block of buckets
+    if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, (void **)&ptr) != 0) //find block
+    {
+        BF_PrintError("Unable to read block.\n");
+        return -1;
+    }
+    ptr += indexInBlock;
+    if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
+    {
+        printf("Nothing to delete.");
+        return -1;
+    }
+    if (BF_ReadBlock(header_info.fileDesc, *ptr, &block) != 0) //find block
+    {
+        BF_PrintError("Unable to read block.\n");
+        return -1;
+    }
+    while (1)
+    {
+        base = block;
+        for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
+        {
+            memcpy(&id, block, sizeof(int));
+            if (id == *((int *)value))
+            {
+                memset(block, 0, sizeof(Record));
+                return 0;
+            }
+            block += sizeof(Record); //move in block
+        }
+        block = base;
+        block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
+        strncpy(&filled, block, sizeof(char));
+        if (filled == 0) //no overflow bucket yet
+        {
+            printf("Nothing to delete.");
+            return -1;
+        }
+        else
+        {
+            if (BF_ReadBlock(header_info.fileDesc, filled, &block) != 0)
+            {
+                BF_PrintError("Unable to read block.\n");
+                return -1;
+            }
+        }
+    }
 }
 
+/*
 int HT_GetAllEntries(HT_info header_info, void *value)
 {
 }

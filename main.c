@@ -72,61 +72,31 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    if ((blockId = HT_InsertEntry(*info, record[0])) == -1)
+    for (int i = 0; i < 1000; i++) //insert 1000 entries from 15k
     {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-
-    if ((blockId = HT_InsertEntry(*info, record[10])) == -1)
-    {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-    if ((blockId = HT_InsertEntry(*info, record[20])) == -1)
-    {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-    if ((blockId = HT_InsertEntry(*info, record[30])) == -1)
-    {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-    if ((blockId = HT_InsertEntry(*info, record[40])) == -1)
-    {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-    if ((blockId = HT_InsertEntry(*info, record[50])) == -1)
-    {
-        printf("Error inserting entry\n");
-        return -1;
-    }
-    printf("%d\n", blockId);
-
-    /*for(int i = 0;i < 1000;i++)                                 //insert 1000 entries from 15k
-    {
-        if ((blockId = HΤ_InsertEntry(*info, record[i])) == -1)
+        if ((blockId = HT_InsertEntry(*info, record[i])) == -1)
         {
             printf("Error inserting entry\n");
             return -1;
         }
     }
 
-    value = &(record[5].id);                                    //delete entry with id the same as record[5]'s
-    if (HP_DeleteEntry(*info,value) != 0)
+    value = &(record[4].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
     {
         printf("Error deleting entry\n");
         return -1;
     }
+    /*
 
-    //value = &(record[0].id);                                  //uncomment in order to find entries with id the same as value -->should be only one   
-    if ((blocks = HP_GetAllEntries(*info,NULL)) == -1)          //print all entries
+    //value = &(record[0].id);                                  //uncomment in order to find entries with id the same as value -->should be only one
+    if ((blocks = HP_GetAllEntries(*info, NULL)) == -1) //print all entries
     {
         printf("Error printing entries\n");
         return -1;
-    }*/
+    }
+    */
     if (HT_CloseIndex(info) != 0) //close file
     {
         printf("Error closing file\n");
