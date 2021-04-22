@@ -128,7 +128,6 @@ int HP_InsertEntry(HP_info header_info, Record record)
                         block++; //keep looking
                     }
                 }
-
                 if (f == 0)
                 {                            //already a record here
                     block += sizeof(Record); //move in block
