@@ -81,7 +81,49 @@ int main(int argc, char **argv)
         }
     }
 
-    value = &(record[4].id); //delete entry with id the same as record[5]'s
+    value = &(record[0].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[10].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[20].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[30].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[40].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[50].id); //delete entry with id the same as record[5]'s
+    //printf("%d\n", *((int *)value));
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+    value = &(record[60].id); //delete entry with id the same as record[5]'s
     //printf("%d\n", *((int *)value));
     if (HT_DeleteEntry(*info, value) != 0)
     {
