@@ -79,6 +79,7 @@ int main(int argc, char **argv)
             printf("Error inserting entry\n");
             return -1;
         }
+        //printf("%d,%d\n", i, blockId);
     }
 
     value = &(record[0].id); //delete entry with id the same as record[5]'s
@@ -88,7 +89,7 @@ int main(int argc, char **argv)
         printf("Error deleting entry\n");
         return -1;
     }
-    value = &(record[10].id); //delete entry with id the same as record[5]'s
+    /*value = &(record[10].id); //delete entry with id the same as record[5]'s
     //printf("%d\n", *((int *)value));
     if (HT_DeleteEntry(*info, value) != 0)
     {
@@ -122,14 +123,14 @@ int main(int argc, char **argv)
     {
         printf("Error deleting entry\n");
         return -1;
-    }
+    } 
     value = &(record[60].id); //delete entry with id the same as record[5]'s
     //printf("%d\n", *((int *)value));
     if (HT_DeleteEntry(*info, value) != 0)
     {
         printf("Error deleting entry\n");
         return -1;
-    }
+    }*/
     /*
 
     //value = &(record[0].id);                                  //uncomment in order to find entries with id the same as value -->should be only one
