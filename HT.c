@@ -335,131 +335,66 @@ int HT_GetAllEntries(HT_info header_info, void *value)
         return -1;
     }
 
-    if (value != NULL)
+    pos = HashFunction(header_info, *((int *)value));
+    blockOfBuckets = pos / (attrPerBlock - 1) + 1; //In which block of buckets the info is
+    indexInBlock = pos % (attrPerBlock - 1);       //Index in the block of buckets
+
+    if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, (void **)&ptr) != 0) //find block
     {
-        pos = HashFunction(header_info, *((int *)value));
-        blockOfBuckets = pos / (attrPerBlock - 1) + 1; //In which block of buckets the info is
-        indexInBlock = pos % (attrPerBlock - 1);       //Index in the block of buckets
-
-        if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, (void **)&ptr) != 0) //find block
-        {
-            BF_PrintError("Unable to read block.\n");
-            free(record);
-            return -1;
-        }
-        ptr += indexInBlock;
-        if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
-        {
-            printf("Nothing to print.");
-            free(record);
-            return -1;
-        }
-        if (BF_ReadBlock(header_info.fileDesc, *ptr, &block) != 0) //find block
-        {
-            BF_PrintError("Unable to read block.\n");
-            free(record);
-            return -1;
-        }
-        while (1)
-        {
-
-            for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
-            {
-
-                memcpy(&id, block, sizeof(int));
-                if (id == *((int *)value))
-                {
-                    memcpy(record, block, sizeof(Record));
-                    printf("%d ", record->id);
-                    printf("%s ", record->name);
-                    printf("%s ", record->surname);
-                    printf("%s\n", record->address);
-                    free(record);
-                    return 0;
-                }
-                block += sizeof(Record); //move in block
-            }
-            block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
-            memcpy(&filled, block, sizeof(int));
-            if (filled == 0) //no overflow bucket yet
-            {
-                printf("Nothing to print.\n");
-                free(record);
-                return -1;
-            }
-            else
-            {
-                if (BF_ReadBlock(header_info.fileDesc, filled, &block) != 0)
-                {
-                    BF_PrintError("Unable to read block.\n");
-                    free(record);
-                    return -1;
-                }
-                *ptr = filled;
-            }
-        }
+        BF_PrintError("Unable to read block.\n");
+        free(record);
+        return -1;
     }
-    else
+    ptr += indexInBlock;
+    if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
     {
-        if (BF_ReadBlock(header_info.fileDesc, blockOfBuckets, (void **)&ptr) != 0) //find block
+        printf("Nothing to print.");
+        free(record);
+        return -1;
+    }
+    if (BF_ReadBlock(header_info.fileDesc, *ptr, &block) != 0) //find block
+    {
+        BF_PrintError("Unable to read block.\n");
+        free(record);
+        return -1;
+    }
+    while (1)
+    {
+
+        for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
         {
-            BF_PrintError("Unable to read block.\n");
+
+            memcpy(&id, block, sizeof(int));
+            if (id == *((int *)value))
+            {
+                memcpy(record, block, sizeof(Record));
+                printf("%d ", record->id);
+                printf("%s ", record->name);
+                printf("%s ", record->surname);
+                printf("%s\n", record->address);
+                free(record);
+                return 0;
+            }
+            block += sizeof(Record); //move in block
+        }
+        block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
+        memcpy(&filled, block, sizeof(int));
+        if (filled == 0) //no overflow bucket yet
+        {
+            printf("Nothing to print.\n");
             free(record);
             return -1;
         }
-
-        for (int i = 0; i < header_info.numBuckets; i++)
+        else
         {
-            ptr += i;
-            if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
-            {
-                printf("Nothing to print.");
-                free(record);
-                return -1;
-            }
-            //printf("%d\n", *ptr);
-
-            if (BF_ReadBlock(header_info.fileDesc, *ptr, &block) != 0) //find block
+            if (BF_ReadBlock(header_info.fileDesc, filled, &block) != 0)
             {
                 BF_PrintError("Unable to read block.\n");
                 free(record);
                 return -1;
             }
-            while (1)
-            {
-
-                for (i = 0; i < BLOCK_SIZE / sizeof(Record); i++) //for every record position - 5 in total
-                {
-
-                    memcpy(&id, block, sizeof(int));
-                    memcpy(record, block, sizeof(Record));
-                    printf("%d ", record->id);
-                    printf("%s ", record->name);
-                    printf("%s ", record->surname);
-                    printf("%s\n", record->address);
-
-                    block += sizeof(Record); //move in block
-                }
-                block += BLOCK_SIZE - sizeof(int); //at the end of the block ,point to the overflow bucket
-                memcpy(&filled, block, sizeof(int));
-                if (filled == 0) //no overflow bucket yet
-                {
-                    break;
-                }
-                else
-                {
-                    if (BF_ReadBlock(header_info.fileDesc, filled, &block) != 0)
-                    {
-                        BF_PrintError("Unable to read block.\n");
-                        free(record);
-                        return -1;
-                    }
-                    *ptr = filled;
-                }
-            }
+            *ptr = filled;
         }
-        free(record);
-        return 0;
     }
 }
 

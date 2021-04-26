@@ -81,22 +81,22 @@ int main(int argc, char **argv)
         }
         //printf("%d,%d\n", i, blockId);
     }
-    /*
+
+    value = &(record[1].id); //delete entry with id the same as record[5]'s
+    if (HT_DeleteEntry(*info, value) != 0)
+    {
+        printf("Error deleting entry\n");
+        return -1;
+    }
+
     for (int i = 0; i < 1000; i++) //insert 1000 entries from 15k
     {
-        value = &(record[i].id); //delete entry with id the same as record[5]'s
-        if (HT_DeleteEntry(*info, value) != 0)
+        value = &(record[i].id);                  //uncomment in order to find entries with id the same as value -->should be only one
+        if (HT_GetAllEntries(*info, value) == -1) //print all entries
         {
-            printf("Error deleting entry\n");
+            printf("Error printing entries\n");
             return -1;
         }
-    }
-    */
-    value = &(record[0].id);                 //uncomment in order to find entries with id the same as value -->should be only one
-    if (HT_GetAllEntries(*info, NULL) == -1) //print all entries
-    {
-        printf("Error printing entries\n");
-        return -1;
     }
 
     if (HT_CloseIndex(info) != 0) //close file
