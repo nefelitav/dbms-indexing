@@ -320,6 +320,7 @@ int HT_GetAllEntries(HT_info header_info, void *value)
     void *block;
     int *ptr;
     int i, blockNum;
+    char name;
     int id;
     int attrPerBlock = BLOCK_SIZE / header_info.attrLength;        //How many block indexes fit in a block
     int indexBlocks = header_info.numBuckets / (attrPerBlock - 1); //Number of blocks of buckets
@@ -348,7 +349,7 @@ int HT_GetAllEntries(HT_info header_info, void *value)
     ptr += indexInBlock;
     if (*ptr == 0) //no bucket yet that corresponds to the result of the hash function
     {
-        printf("Nothing to print.");
+        //printf("Nothing to print.\n");
         free(record);
         return -1;
     }
@@ -356,7 +357,7 @@ int HT_GetAllEntries(HT_info header_info, void *value)
     {
         BF_PrintError("Unable to read block.\n");
         free(record);
-        return -1;
+        return 0;
     }
     while (1)
     {
@@ -365,15 +366,22 @@ int HT_GetAllEntries(HT_info header_info, void *value)
         {
 
             memcpy(&id, block, sizeof(int));
+            block += 4;
+            strncpy(&name, block, 1);
+            block -= 4;
+
             if (id == *((int *)value))
             {
                 memcpy(record, block, sizeof(Record));
-                printf("%d ", record->id);
-                printf("%s ", record->name);
-                printf("%s ", record->surname);
-                printf("%s\n", record->address);
-                free(record);
-                return 0;
+                if (id != 0 || (id == 0 && name != 0))
+                {
+                    printf("%d ", record->id);
+                    printf("%s ", record->name);
+                    printf("%s ", record->surname);
+                    printf("%s\n", record->address);
+                    free(record);
+                    return 0;
+                }
             }
             block += sizeof(Record); //move in block
         }
@@ -381,9 +389,9 @@ int HT_GetAllEntries(HT_info header_info, void *value)
         memcpy(&filled, block, sizeof(int));
         if (filled == 0) //no overflow bucket yet
         {
-            printf("Nothing to print.\n");
+            //printf("Nothing to print.\n");
             free(record);
-            return -1;
+            return 0;
         }
         else
         {
