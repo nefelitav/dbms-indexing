@@ -1,7 +1,16 @@
 # Heap File
 
-compile and run : make && ./main \
-clean : make clean
+compile and run :
+
+```
+make && ./main
+```
+
+clean :
+
+```
+make clean
+```
 
 In main.c i read records from records15K.txt and then i call the functions i implemented in HP.c.
 I create a heap file , i insert records in it , i delete records according to the id, i print records according to the id and i close the file.
@@ -11,8 +20,17 @@ In HP_InsertEntry I check so that if there are empty entries in each block, I en
 
 # Hash Table
 
-compile and run : make && ./main \
-clean : make clean
+compile and run :
+
+```
+make && ./main
+```
+
+clean :
+
+```
+make clean
+```
 
 In main.c i read records from records15K.txt and then i call the functions i implemented in HT.c.
 In HT.c i create a block that contains a pointer to each bucket, where i insert records.If a bucket is full, i create an overflow bucket.
